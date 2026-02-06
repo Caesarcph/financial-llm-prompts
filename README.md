@@ -24,6 +24,7 @@ prompts/
 ├── risk_assessment/         # Risk evaluation & management
 ├── strategy_evaluation/     # Backtest & strategy review
 ├── trade_planning/          # Entry/exit planning
+├── quantitative_analysis/   # Quant logic & strategies
 ├── research_synthesis/      # Multi-source research
 └── report_generation/       # Automated reports
 ```
@@ -384,6 +385,43 @@ Generate a daily market brief for {{date}}:
 5. Risk factors
 
 **Format as a professional brief, not JSON.**
+```
+
+### 6. Quantitative Analysis Prompts
+
+#### Strategy Logic Generator
+```markdown
+# prompts/quantitative_analysis/strategy_logic_generator.md
+
+## System
+You are an expert quantitative developer specializing in algorithmic trading 
+and Python (Pandas/NumPy). Your goal is to translate natural language trading 
+ideas into precise, vectorized pseudocode logic.
+
+## User
+Convert the following trading strategy description into structured pseudocode logic:
+
+**Strategy Name:** {{strategy_name}}
+**Description:** {{strategy_description}}
+**Asset Class:** {{asset_class}}
+**Timeframe:** {{timeframe}}
+
+**Output Format:**
+Provide the logic in Python-like pseudocode.
+
+```python
+def generate_signals(df):
+    # 1. Indicators
+    # df['ma_fast'] = ...
+    
+    # 2. Entry Logic
+    # df['long_signal'] = (condition_a) & (condition_b)
+    
+    # 3. Exit Logic
+    # ...
+    
+    return df
+```
 ```
 
 ## 🔧 Advanced Usage
