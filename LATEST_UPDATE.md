@@ -1,12 +1,7 @@
-✅ **Hourly Project Inspection & Feature Development Report**
+# Latest Update
 
-**Selected Project:** `financial-llm-prompts`
-**Current Status:** Active, clean working tree.
-
-**Task Executed:**
-1. **New Feature:** Added `prompts/quantitative_analysis/feature_engineering.md` to assist in generating ML features for financial models.
-2. **Documentation:** Updated `README.md` to include the new prompt in the "Quantitative Analysis Prompts" section.
-3. **Deployment:** Changes committed and pushed to GitHub (`feat: add feature engineering prompt for ML`).
-
-**Next Steps:**
-- Continue expanding the "Quantitative Analysis" section with prompts for "Backtest Overfitting Check" or "Portfolio Optimization".
+**Date:** 2026-02-07
+**Update:** Added new sentiment analysis prompt for Earnings Call Transcripts.
+**Details:**
+- Created `prompts/sentiment_analysis/earnings_call_sentiment.md`
+- Focuses on extracting guidance sentiment, management tone, and Q&A dynamics.
