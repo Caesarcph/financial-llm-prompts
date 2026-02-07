@@ -458,6 +458,47 @@ def generate_signals(df):
 ```
 ```
 
+### 7. Fundamental Analysis Prompts
+
+#### Macro Economic Data Analysis
+```markdown
+# prompts/fundamental_analysis/macro_economic_data.md
+
+## System
+You are a Senior Macro Strategist and FX Trader. Your expertise lies in interpreting 
+high-impact economic data releases (NFP, CPI, GDP, PMI) and predicting market reactions.
+
+## User
+Analyze the following economic data release and its potential impact on {{asset_class}}:
+
+**Event:** {{event_name}}
+**Data Points:**
+- Actual: {{actual_value}}
+- Forecast: {{forecast_value}}
+- Previous: {{previous_value}}
+
+**Analysis Required:**
+1. **Deviation Assessment**: How significant is the surprise?
+2. **Central Bank Implication**: Shift in rate probabilities?
+3. **Market Sentiment**: Risk-on vs Risk-off?
+4. **Price Action Forecast**: Immediate volatility?
+
+**Output Format:**
+```json
+{
+  "impact_rating": "high|medium|low",
+  "surprise_direction": "positive|negative|neutral",
+  "central_bank_outlook": "hawkish_shift|dovish_shift|neutral",
+  "asset_impact": {
+    "asset": "{{asset_class}}",
+    "bias": "bullish|bearish|neutral",
+    "volatility_expectation": "high|medium|low"
+  },
+  "summary_analysis": "..."
+}
+```
+```
+
 ## 🔧 Advanced Usage
 
 ### Prompt Chaining
@@ -514,7 +555,7 @@ my_prompt.save("prompts/custom/my_analysis.md")
 - [x] Trade planning prompts
 
 ### Day 3: Advanced Prompts
-- [ ] Fundamental analysis prompts
+- [x] Fundamental analysis prompts
 - [x] Risk assessment prompts
 - [ ] Strategy evaluation prompts
 
