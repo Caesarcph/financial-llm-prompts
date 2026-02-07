@@ -458,6 +458,25 @@ def generate_signals(df):
 ```
 ```
 
+#### Feature Engineering
+```markdown
+# prompts/quantitative_analysis/feature_engineering.md
+
+## System
+You are a senior quantitative researcher specializing in machine learning for finance. Your expertise lies in feature engineering—transforming raw market data (OHLCV) into predictive signals.
+
+## User
+Suggest a set of engineered features for a machine learning model predicting price movements for the following asset.
+
+**Asset/Market:** {{asset_name}}
+**Target Variable:** {{target_variable}}
+**Data Frequency:** {{data_frequency}}
+**Model Type:** {{model_type}}
+
+**Output Format:**
+List the features with mathematical definitions or brief Python logic (Pandas).
+```
+
 ### 7. Fundamental Analysis Prompts
 
 #### Macro Economic Data Analysis
