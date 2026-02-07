@@ -557,7 +557,7 @@ my_prompt.save("prompts/custom/my_analysis.md")
 ### Day 3: Advanced Prompts
 - [x] Fundamental analysis prompts
 - [x] Risk assessment prompts
-- [ ] Strategy evaluation prompts
+- [x] Strategy evaluation prompts
 
 ### Day 4: Integration
 - [ ] Python library for prompt management
