@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from string import Template
-from typing import Any
+from typing import Any, Callable
 
 
 @dataclass(slots=True)
@@ -15,16 +16,21 @@ class PromptTemplate:
     key: str
     content: str
 
+    _VAR_PATTERN = re.compile(r"\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}")
+
+    def variables(self) -> set[str]:
+        """Return the set of ``{{var}}`` placeholder names used in this template."""
+
+        return set(self._VAR_PATTERN.findall(self.content))
+
     def fill(self, **variables: Any) -> str:
-        """Fill {{var}} placeholders with provided values."""
+        """Fill ``{{var}}`` placeholders with provided values."""
 
         normalized = self.content
         for name in variables:
             normalized = normalized.replace("{{" + name + "}}", "${" + name + "}")
         try:
-            return Template(normalized).substitute(
-                {k: str(v) for k, v in variables.items()}
-            )
+            return Template(normalized).substitute({k: str(v) for k, v in variables.items()})
         except KeyError as exc:
             missing = exc.args[0]
             raise ValueError(f"Missing template variable: {missing}") from exc
@@ -37,12 +43,26 @@ class PromptLibrary:
         self.prompts_dir = Path(prompts_dir)
 
     def get(self, key: str) -> PromptTemplate:
-        """Get prompt by key like market_analysis/trend_analysis."""
+        """Get prompt by key like ``market_analysis/trend_analysis``."""
 
         path = self.prompts_dir / f"{key}.md"
         if not path.exists():
             raise FileNotFoundError(f"Prompt not found: {path}")
         return PromptTemplate(key=key, content=path.read_text(encoding="utf-8"))
+
+    def list_keys(self) -> list[str]:
+        """List all available prompt keys relative to ``prompts_dir``.
+
+        Example returned key: ``market_analysis/trend_analysis``.
+        """
+
+        if not self.prompts_dir.exists():
+            return []
+        keys: list[str] = []
+        for path in sorted(self.prompts_dir.rglob("*.md")):
+            rel = path.relative_to(self.prompts_dir)
+            keys.append(rel.as_posix()[:-3])
+        return keys
 
 
 class LLMClient:
@@ -55,7 +75,7 @@ class LLMClient:
         self,
         provider: str,
         model: str,
-        analyzer: callable | None = None,
+        analyzer: Callable[[str], str] | None = None,
     ) -> None:
         self.provider = provider
         self.model = model
