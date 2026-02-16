@@ -26,9 +26,8 @@ class PromptTemplate:
     def fill(self, **variables: Any) -> str:
         """Fill ``{{var}}`` placeholders with provided values."""
 
-        normalized = self.content
-        for name in variables:
-            normalized = normalized.replace("{{" + name + "}}", "${" + name + "}")
+        # Normalize all ``{{ var }}`` placeholders to ``${var}`` so spacing is supported.
+        normalized = self._VAR_PATTERN.sub(r"${\1}", self.content)
         try:
             return Template(normalized).substitute({k: str(v) for k, v in variables.items()})
         except KeyError as exc:
