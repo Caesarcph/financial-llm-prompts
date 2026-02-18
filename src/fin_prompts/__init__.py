@@ -8,6 +8,8 @@ from pathlib import Path
 from string import Template
 from typing import Any, Callable
 
+from .output_validator import OutputValidator, ValidationResult, validate_response
+
 
 @dataclass(slots=True)
 class PromptTemplate:
@@ -91,4 +93,11 @@ class LLMClient:
         return str(self._analyzer(prompt))
 
 
-__all__ = ["PromptLibrary", "PromptTemplate", "LLMClient"]
+__all__ = [
+    "PromptLibrary",
+    "PromptTemplate",
+    "LLMClient",
+    "OutputValidator",
+    "ValidationResult",
+    "validate_response",
+]
