@@ -36,6 +36,16 @@ class PromptTemplate:
             missing = exc.args[0]
             raise ValueError(f"Missing template variable: {missing}") from exc
 
+    def save(self, path: str | Path) -> None:
+        """Save this template to a markdown file.
+
+        Args:
+            path: File path to save to (should end with .md).
+        """
+        file_path = Path(path)
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        file_path.write_text(self.content, encoding="utf-8")
+
 
 class PromptLibrary:
     """Load and retrieve markdown prompts by key path."""
@@ -93,10 +103,73 @@ class LLMClient:
         return str(self._analyzer(prompt))
 
 
+class PromptChain:
+    """Execute a chain of prompts with weighted results.
+
+    Allows combining multiple prompt analyses into a single comprehensive result.
+    """
+
+    def __init__(
+        self,
+        chain: list[tuple[str, dict[str, Any]]],
+        library: PromptLibrary | None = None,
+    ) -> None:
+        """Initialize prompt chain.
+
+        Args:
+            chain: List of (prompt_key, config) tuples. Config can include 'weight'.
+            library: PromptLibrary instance (uses default if None).
+        """
+        self.chain = chain
+        self.library = library or PromptLibrary()
+
+    def execute(
+        self,
+        client: LLMClient,
+        context: dict[str, Any] | None = None,
+        **variables: Any,
+    ) -> list[dict[str, Any]]:
+        """Execute all prompts in chain and return weighted results.
+
+        Args:
+            client: LLMClient instance for making requests.
+            context: Optional shared context passed to all prompts.
+            **variables: Additional variables passed to each prompt.
+
+        Returns:
+            List of dicts with 'prompt_key', 'weight', 'response', 'parsed' keys.
+        """
+        results: list[dict[str, Any]] = []
+        combined_vars = {**(context or {}), **variables}
+
+        for prompt_key, config in self.chain:
+            weight = config.get("weight", 1.0)
+            template = self.library.get(prompt_key)
+            filled = template.fill(**combined_vars)
+            response = client.analyze(filled)
+
+            # Try to parse JSON response
+            parsed = None
+            validator = OutputValidator()
+            validation = validator.validate_json(response)
+            if validation.is_valid:
+                parsed = validation.data
+
+            results.append({
+                "prompt_key": prompt_key,
+                "weight": weight,
+                "response": response,
+                "parsed": parsed,
+            })
+
+        return results
+
+
 __all__ = [
     "PromptLibrary",
     "PromptTemplate",
     "LLMClient",
+    "PromptChain",
     "OutputValidator",
     "ValidationResult",
     "validate_response",
