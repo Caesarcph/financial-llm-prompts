@@ -17,6 +17,20 @@ class TestPromptLibrary(unittest.TestCase):
         tpl = PromptTemplate(key="x", content="Hello {{ name }} on {{day}}")
         self.assertEqual(tpl.fill(name="Caesar", day="Monday"), "Hello Caesar on Monday")
 
+    def test_from_sections_builds_markdown_template(self) -> None:
+        tpl = PromptTemplate.from_sections(
+            key="custom/my_prompt",
+            system="You are a {{role}} analyst.",
+            user="Analyze {{symbol}}.",
+            output_schema={"summary": "...", "confidence": 0.0},
+        )
+        self.assertIn("## System", tpl.content)
+        self.assertIn("## User", tpl.content)
+        self.assertIn("```json", tpl.content)
+        rendered = tpl.fill(role="macro", symbol="AAPL")
+        self.assertIn("macro", rendered)
+        self.assertIn("AAPL", rendered)
+
 
 if __name__ == "__main__":
     unittest.main()

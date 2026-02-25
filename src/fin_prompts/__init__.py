@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -19,6 +20,36 @@ class PromptTemplate:
     content: str
 
     _VAR_PATTERN = re.compile(r"\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}")
+
+    @classmethod
+    def from_sections(
+        cls,
+        key: str,
+        system: str,
+        user: str,
+        output_schema: dict[str, Any] | None = None,
+    ) -> "PromptTemplate":
+        """Build a template from ``System``/``User`` sections.
+
+        Args:
+            key: Prompt key used by PromptLibrary.
+            system: System instruction text.
+            user: User prompt text.
+            output_schema: Optional JSON schema example to append.
+        """
+
+        sections = ["## System", system.strip(), "", "## User", user.strip()]
+        if output_schema:
+            pretty_schema = json.dumps(output_schema, indent=2, ensure_ascii=False)
+            sections.extend([
+                "",
+                "**Output Format:**",
+                "```json",
+                pretty_schema,
+                "```",
+            ])
+        content = "\n".join(sections).strip() + "\n"
+        return cls(key=key, content=content)
 
     def variables(self) -> set[str]:
         """Return the set of ``{{var}}`` placeholder names used in this template."""
