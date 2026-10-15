@@ -32,5 +32,9 @@ class TestPromptLibrary(unittest.TestCase):
         self.assertIn("AAPL", rendered)
 
 
+    def test_fill_keeps_literal_dollar_signs(self) -> None:
+        tpl = PromptTemplate(key="t", content="Balance: ${{balance}}; ticker $AAPL costs $5.")
+        self.assertEqual(tpl.fill(balance="1000"), "Balance: $1000; ticker $AAPL costs $5.")
+
 if __name__ == "__main__":
     unittest.main()
