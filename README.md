@@ -1,32 +1,70 @@
 # 💡 Financial-LLM-Prompts
 
-> Curated collection of battle-tested prompts for financial analysis, trading decisions, and market research using GPT-4, Claude, and other LLMs.
+> Curated collection of prompts for financial analysis, trading decisions, and market research using GPT-4, Claude, and other LLMs.
 
-[![Prompts](https://img.shields.io/badge/Prompts-50+-blue.svg)](prompts/)
+[![CI](https://github.com/Caesarcph/financial-llm-prompts/actions/workflows/ci.yml/badge.svg)](https://github.com/Caesarcph/financial-llm-prompts/actions/workflows/ci.yml)
+[![Prompts](https://img.shields.io/badge/Prompts-21-blue.svg)](prompts/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+> **Status:** Early-stage collection. 21 markdown prompt templates across 8 categories are in [`prompts/`](prompts/), plus a small, dependency-free Python helper (`src/fin_prompts`: prompt loading/filling, a prompt-chaining helper, and JSON output validation) with unit tests. There are no built-in LLM provider clients — you plug in your own API call. Report-generation prompts are planned — see the Development Roadmap section below.
 
 ## 🎯 Why This Repository?
 
-Generic prompts don't work well for finance. This repo provides **domain-specific prompts** that:
+Generic prompts don't work well for finance. This repo provides **domain-specific prompts** designed to:
 
-- ✅ Understand financial terminology
-- ✅ Output structured, actionable insights
+- ✅ Use financial terminology
+- ✅ Request structured JSON output
 - ✅ Handle market nuances (sentiment ≠ direction)
-- ✅ Integrate with trading systems
+- ✅ Be easy to plug into your own trading/research code
 
 ## 📁 Prompt Categories
 
 ```
 prompts/
-├── market_analysis/         # Price action & trend analysis
-├── sentiment_analysis/      # News & social media sentiment
-├── fundamental_analysis/    # Earnings, financials, valuation
-├── risk_assessment/         # Risk evaluation & management
-├── strategy_evaluation/     # Backtest & strategy review
-├── trade_planning/          # Entry/exit planning
-├── quantitative_analysis/   # Quant logic & strategies
-├── research_synthesis/      # Multi-source research
-└── report_generation/       # Automated reports
+├── fundamental_analysis/      # Earnings, macro data, SEC filings
+│   ├── earnings_analysis.md
+│   ├── macro_economic_data.md
+│   └── sec_risk_factors.md
+├── market_analysis/           # Price action, trend & macro policy
+│   ├── central_bank_policy.md
+│   ├── cross_asset_correlation.md
+│   ├── mtf_analysis.md
+│   └── trend_analysis.md
+├── quantitative_analysis/     # Quant logic, factors & regimes
+│   ├── factor_ideation.md
+│   ├── feature_engineering.md
+│   ├── regime_detection.md
+│   └── strategy_logic_generator.md
+├── research_synthesis/        # Multi-source research
+│   └── multi_source_synthesis.md
+├── risk_assessment/           # Risk evaluation & management
+│   ├── event_impact_analysis.md
+│   └── portfolio_risk.md
+├── sentiment_analysis/        # News, social & earnings-call sentiment
+│   ├── earnings_call_sentiment.md
+│   ├── news_sentiment.md
+│   └── social_sentiment.md
+├── strategy_evaluation/       # Backtest & robustness review
+│   ├── backtest_review.md
+│   └── strategy_robustness.md
+└── trade_planning/            # Entry/exit & scenario planning
+    ├── entry_exit_plan.md
+    └── scenario_analysis.md
+```
+
+Repository layout:
+
+```
+financial-llm-prompts/
+├── prompts/                   # 21 prompt templates (see above)
+├── src/fin_prompts/
+│   ├── __init__.py            # PromptLibrary, PromptTemplate, PromptChain, LLMClient
+│   └── output_validator.py    # OutputValidator, validate_response
+├── tests/
+│   ├── test_output_validator.py
+│   └── test_prompt_library.py
+├── pytest.ini
+└── requirements.txt
 ```
 
 ## 🚀 Quick Start
@@ -36,7 +74,13 @@ prompts/
 ```bash
 git clone https://github.com/Caesarcph/financial-llm-prompts.git
 cd financial-llm-prompts
-pip install -r requirements.txt  # Optional: for Python integration
+pip install -r requirements.txt  # Optional: fin_prompts itself only uses the standard library
+```
+
+The prompts are plain markdown and can be used without any code. The Python helper requires Python 3.10+ and is not packaged; run it from the repo root with `src` on the path:
+
+```bash
+export PYTHONPATH=src   # Windows PowerShell: $env:PYTHONPATH="src"
 ```
 
 ### Basic Usage
@@ -46,11 +90,13 @@ from fin_prompts import PromptLibrary, LLMClient
 
 # Load prompts
 library = PromptLibrary("prompts/")
+print(library.list_keys())  # e.g. ['fundamental_analysis/earnings_analysis', ...]
 
 # Get a prompt
 prompt = library.get("market_analysis/trend_analysis")
+print(prompt.variables())  # {'symbol', 'timeframe', 'price_data', 'indicators'}
 
-# Fill in variables
+# Fill in {{variables}} (all placeholders must be provided)
 filled_prompt = prompt.fill(
     symbol="AAPL",
     timeframe="4H",
@@ -58,12 +104,17 @@ filled_prompt = prompt.fill(
     indicators=indicators_str
 )
 
-# Call LLM
-client = LLMClient(provider="anthropic", model="claude-sonnet-4-20250514")
+# Call LLM — LLMClient is a thin adapter: pass any callable(prompt: str) -> str
+def my_llm_call(text: str) -> str:
+    ...  # e.g. call the Anthropic/OpenAI SDK here and return the response text
+
+client = LLMClient(provider="anthropic", model="claude-sonnet-4-20250514", analyzer=my_llm_call)
 response = client.analyze(filled_prompt)
 ```
 
 ## 📚 Prompt Library
+
+The excerpts below are abridged; see the files in [`prompts/`](prompts/) for the full text. Prompts not excerpted here: `fundamental_analysis/earnings_analysis`, `fundamental_analysis/sec_risk_factors`, `market_analysis/cross_asset_correlation`, `quantitative_analysis/factor_ideation`, `quantitative_analysis/regime_detection`, `research_synthesis/multi_source_synthesis`, `sentiment_analysis/earnings_call_sentiment`, `strategy_evaluation/strategy_robustness`, `trade_planning/scenario_analysis`.
 
 ### 1. Market Analysis Prompts
 
@@ -389,11 +440,13 @@ Review the following backtest results:
 ```
 ```
 
-### 5. Report Generation Prompts
+### 5. Report Generation Prompts (planned)
 
-#### Daily Market Brief
+> Not yet in the repo — `prompts/report_generation/` does not exist yet. Below is the draft design.
+
+#### Daily Market Brief (planned)
 ```markdown
-# prompts/report_generation/daily_brief.md
+# Draft: prompts/report_generation/daily_brief.md (planned)
 
 ## System
 You generate concise, professional daily market briefs for traders.
@@ -607,11 +660,31 @@ chain = PromptChain([
     ("trade_planning/entry_exit_plan", {"weight": 0.2}),
 ])
 
-result = chain.execute(
+# Every prompt in the chain is filled from the same variables (context + kwargs),
+# so the union of all their {{placeholders}} must be provided.
+results = chain.execute(
+    client=llm_client,          # an LLMClient with an analyzer callable
+    context=market_context,     # dict of shared variables
     symbol="AAPL",
-    client=llm_client,
-    context=market_context
 )
+# results: list of {"prompt_key", "weight", "response", "parsed"} dicts —
+# "parsed" holds the extracted JSON (or None). Combining the weighted results is up to you.
+```
+
+### Output Validation
+
+```python
+from fin_prompts import validate_response
+
+result = validate_response(
+    response,
+    required_keys=["trend", "confidence"],
+    enum_fields={"trend": ["bullish", "bearish", "ranging"]},
+)
+if result.is_valid:
+    print(result.data["trend"])
+else:
+    print(result.error)
 ```
 
 ### Custom Prompt Templates
@@ -620,24 +693,27 @@ result = chain.execute(
 # Create custom prompts
 from fin_prompts import PromptTemplate
 
-my_prompt = PromptTemplate(
-    name="my_custom_analysis",
+my_prompt = PromptTemplate.from_sections(
+    key="custom/my_analysis",
     system="You are a {{analyst_type}} specializing in {{specialty}}.",
     user="""
     Analyze {{symbol}} considering:
     {{custom_data}}
-    
+
     Output as JSON with keys: analysis, confidence, action
     """,
-    output_schema={
-        "analysis": str,
-        "confidence": float,
-        "action": str
-    }
+    output_schema={"analysis": "...", "confidence": 0.0, "action": "..."},  # JSON example appended to the prompt
 )
 
 # Save to library
 my_prompt.save("prompts/custom/my_analysis.md")
+```
+
+### Running Tests
+
+```bash
+pip install pytest
+pytest   # pytest.ini adds src/ to the path
 ```
 
 ## 🛠️ Development Roadmap
@@ -651,15 +727,18 @@ my_prompt.save("prompts/custom/my_analysis.md")
 - [x] Fundamental analysis prompts
 - [x] Risk assessment prompts
 - [x] Strategy evaluation prompts
+- [x] Quantitative analysis & research synthesis prompts
+- [ ] Report generation prompts (e.g. daily market brief)
 
 ### Day 4: Integration
-- [ ] Python library for prompt management
-- [ ] LLM client wrappers
-- [ ] Output validation
+- [x] Python library for prompt management (`PromptLibrary`, `PromptTemplate`, `PromptChain`)
+- [ ] LLM client wrappers (today `LLMClient` only wraps a callable you supply)
+- [x] Output validation (`OutputValidator`, `validate_response`)
 
 ### Day 5: Documentation
-- [ ] Usage examples
-- [ ] Best practices guide
+- [x] Basic usage examples (this README)
+- [ ] Runnable example scripts
+- [ ] Best practices guide (short version below)
 - [ ] Contributing guidelines
 
 ## 💡 Best Practices
@@ -695,7 +774,7 @@ Is this a good trade?
 
 ## 🤝 Contributing
 
-Submit your battle-tested prompts! Requirements:
+Submit your prompts! Requirements:
 - Clear system and user sections
 - Structured JSON output
 - Example usage
